@@ -17,7 +17,7 @@ app.set('view engine', 'ejs');
 // Serve static files from /public
 app.use(express.static(path.join(__dirname, '..', 'public')));
 console.log('__dirname:', __dirname);
-console.log('Static folder:', path.join(__dirname, 'public'));
+console.log('Serving static files from:', path.join(__dirname, '..', 'public'));
 
 
 // Session setup
@@ -63,6 +63,11 @@ app.use(function(err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
   res.status(err.status || 500);
   res.render('error');
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;
