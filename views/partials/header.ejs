@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body>
+
+  <% if(nav == true ){ %>
+  <div class="fixed top-0 left-0 w-full z-50 px-4 sm:px-10 py-2 sm:py-3 flex bg-zinc-800 text-white justify-between shadow-md">
+  <h3 class="text-base sm:text-lg font-semibold">spexncil</h3>
+  <div class="flex gap-4 sm:gap-10 items-center text-sm sm:text-base">
+    <a href="/profile" class="<%= currentPage === 'profile' ? 'opacity-100' : 'opacity-50 hover:opacity-80' %> transition">
+      Profile
+    </a>
+    <a href="/feed" class="<%= currentPage === 'feed' ? 'opacity-100' : 'opacity-50 hover:opacity-80' %> transition">
+      Feed
+    </a>
+
+    <a class="px-2 py-1 bg-red-700 text-white rounded-md" href="/logout">Logout</a>
+  </div>
+</div>
+
+  <% } %>

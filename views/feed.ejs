@@ -1,0 +1,23 @@
+<%- include('./partials/header.ejs') %>
+
+<div class="w-full min-h-screen bg-zinc-800 text-white py-20">
+  <!-- Masonry Layout for All Screens -->
+  <div class="columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 px-3">
+    <% posts.forEach(function(elem){ %>
+      <a href="/post/<%= elem._id %>" class="block mb-4 break-inside-avoid rounded-lg overflow-hidden bg-zinc-900 shadow hover:shadow-xl hover:scale-[1.01] transition-transform duration-200">
+        <img 
+          src="/images/uploads/<%= elem.image %>" 
+          class="w-full h-auto object-cover" 
+          alt="<%= elem.title %>" 
+          loading="lazy"
+        />
+        <div class="p-3">
+          <h5 class="text-sm font-semibold truncate"><%= elem.title %></h5>
+          <p class="text-xs text-zinc-400">@<%= elem.user.username %></p>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+</div>
+
+<%- include('./partials/footer.ejs') %>

@@ -1,0 +1,26 @@
+<%- include('./partials/header') %>
+
+<div class="w-full min-h-screen bg-zinc-900 text-white py-20">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl sm:text-4xl font-semibold mb-6">Your Liked Posts</h1>
+
+    <% if (user.likedPosts.length > 0) { %>
+      <div class="columns-2 sm:columns-3 md:columns-4 gap-3 sm:gap-4 space-y-3 sm:space-y-4">
+        <% user.likedPosts.forEach(function(post) { %>
+          <a href="/post/<%= post._id %>" class="break-inside-avoid overflow-hidden rounded-lg shadow block">
+            <img 
+              src="/images/uploads/<%= post.image %>" 
+              class="w-full object-cover rounded-md 
+                     max-h-[350px] sm:max-h-none" 
+              alt="Liked post"
+            />
+          </a>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="text-zinc-300">You haven’t liked any posts yet.</p>
+    <% } %>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>
