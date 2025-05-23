@@ -7,10 +7,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const upload = require('./multer');
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
-});
+
 
 
 // Passport config
