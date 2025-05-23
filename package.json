@@ -5,24 +5,25 @@
   "scripts": {
     "build": "npm install && npm run build-client",
     "build-client": "cd client && npm install && npm run build",
-     "start": "node src/app.js",
+    "start": "node src/app.js",
     "dev": "nodemon src/app.js"
   },
   "dependencies": {
-    "serverless-http": "^3.0.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
+    "dotenv": "^16.5.0",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "express-session": "^1.18.1",
     "http-errors": "~1.6.3",
-    "mongoose": "^8.13.2",
+    "mongoose": "^8.15.0",
     "morgan": "~1.9.1",
     "multer": "^1.4.5-lts.2",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^8.0.0",
     "react-scripts": "^5.0.1",
+    "serverless-http": "^3.0.2",
     "uuid": "^11.1.0"
   },
   "browserslist": {
@@ -37,7 +38,7 @@
       "last 1 safari version"
     ]
   },
-   "engines": {
+  "engines": {
     "node": "18.x"
   }
 }

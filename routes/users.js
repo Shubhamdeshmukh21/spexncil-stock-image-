@@ -1,7 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');  // keep this if you define schemas or models here
+// Remove mongoose.connect() from this file
+
 const plm = require("passport-local-mongoose");
 
-mongoose.connect("mongodb://127.0.0.1:27017/spexncil");
+
 
 const userSchema = new mongoose.Schema({
   username: String, // used by passport-local-mongoose

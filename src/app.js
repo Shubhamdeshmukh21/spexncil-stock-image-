@@ -1,9 +1,22 @@
+require('dotenv').config();
+const mongoose = require('mongoose');
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB connected!'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// ... rest of your Express app setup
+
+
+
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const expressSession = require("express-session");
+
 
 var indexRouter = require('../routes/index');
 var usersRouter = require('../routes/users');
@@ -69,6 +82,9 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+console.log('Mongo URI:', process.env.MONGO_URI);
+
 
 
 module.exports = app;

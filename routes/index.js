@@ -6,6 +6,7 @@ const postmodel = require('./post');     // your post model
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const upload = require('./multer');
+const mongoose = require('mongoose');
 
 
 
