@@ -13,9 +13,9 @@
   <div class="absolute inset-0 opacity-30 blur-sm pointer-events-none z-0">
     <div class="flex flex-wrap gap-4 p-4">
       <% if (posts && posts.length > 0) { %>
-        <% posts.forEach(function(feedPost){ %>
-          <img src="/images/uploads/<%= feedPost.image %>" class="w-20 h-20 object-cover rounded-md" />
-        <% }) %>
+      <% posts.forEach(function(feedPost){ %>
+      <img src="/images/uploads/<%= feedPost.image %>" class="w-20 h-20 object-cover rounded-md" />
+      <% }) %>
       <% } %>
     </div>
   </div>
@@ -31,7 +31,7 @@
 
       <!-- Image -->
       <div class="w-full md:w-1/2 flex justify-center items-center">
-        <img src="/images/uploads/<%= post.image %>" class="w-full max-h-[60vh] object-contain rounded-md" />
+        <img src="data:<%= post.image.contentType %>;base64,<%= post.image.data.toString('base64') %>" alt="Post image" class="rounded-lg w-full h-auto" />
       </div>
 
       <!-- Text -->
@@ -42,8 +42,7 @@
 
         <!-- Like Button -->
         <form action="/like/<%= post._id %>" method="POST" class="mt-4">
-          <button type="submit"
-            class="text-2xl md:text-3xl transition duration-200 <%= user.likedPosts.some(p => p.equals(post._id)) ? 'text-red-600' : 'text-zinc-400 hover:text-red-500' %>">
+          <button type="submit" class="text-2xl md:text-3xl transition duration-200 <%= user.likedPosts.some(p => p.equals(post._id)) ? 'text-red-600' : 'text-zinc-400 hover:text-red-500' %>">
             <i class="<%= user.likedPosts.some(p => p.equals(post._id)) ? 'ri-heart-fill' : 'ri-heart-line' %>"></i>
           </button>
         </form>

@@ -7,6 +7,11 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const upload = require('./multer');
 
+const multer = require('multer');
+const storage = multer.memoryStorage();
+
+
+
 // Passport config
 passport.use(new LocalStrategy(usermodel.authenticate()));
 
@@ -98,7 +103,10 @@ router.post('/createpost', isLoggedIn, upload.single('postimage'), async (req, r
       user: user._id,
       title: req.body.title,
       description: req.body.description,
-      image: req.file.filename,
+      image: {
+        data: req.file.buffer,
+        contentType: req.file.mimetype,
+      },
     });
 
     user.posts.push(post._id);
@@ -110,6 +118,7 @@ router.post('/createpost', isLoggedIn, upload.single('postimage'), async (req, r
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 router.post('/fileupload', isLoggedIn, upload.single('image'), async (req, res) => {
   try {
