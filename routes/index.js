@@ -1,15 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-const usermodel = require('./users');
-const postmodel = require('./post');
+const usermodel = require('./users');    // your user model
+const postmodel = require('./post');     // your post model
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const upload = require('./multer');
-const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.error("❌ MongoDB Error:", err));
 
 // Passport config
 passport.use(new LocalStrategy(usermodel.authenticate()));
@@ -22,6 +18,7 @@ router.get('/register', (req, res) => {
   res.render('register', { nav: false });
 });
 
+// ✅ PROFILE ROUTE
 router.get('/profile', isLoggedIn, async (req, res) => {
   try {
     const user = await usermodel
@@ -29,7 +26,7 @@ router.get('/profile', isLoggedIn, async (req, res) => {
       .populate('posts')
       .populate('likedPosts');
 
-    res.render('profile', { user, nav: true, currentPage: 'profile' });
+    res.render('profile', { user, nav: true, currentPage: 'profile' }); // Pass currentPage
   } catch (err) {
     console.error('Profile load error:', err);
     res.status(500).send('Something went wrong.');
@@ -43,18 +40,20 @@ router.get('/show/posts', isLoggedIn, async (req, res) => {
       .populate('posts');
 
     res.render('show', { user, nav: true, currentPage: '' });
+
   } catch (err) {
     console.error('Show posts error:', err);
     res.status(500).send('Something went wrong.');
   }
 });
 
+// ✅ FEED ROUTE
 router.get('/feed', isLoggedIn, async (req, res) => {
   try {
     const user = await usermodel.findOne({ username: req.session.passport.user });
     const posts = await postmodel.find().populate('user');
 
-    res.render('feed', { user, posts, nav: true, currentPage: 'feed' });
+    res.render('feed', { user, posts, nav: true, currentPage: 'feed' }); // Pass currentPage
   } catch (err) {
     console.error('Feed error:', err);
     res.status(500).send('Something went wrong.');
@@ -64,12 +63,12 @@ router.get('/feed', isLoggedIn, async (req, res) => {
 router.get('/post/:id', isLoggedIn, async (req, res) => {
   try {
     const post = await postmodel.findById(req.params.id).populate('user');
-    const posts = await postmodel.find();
+    const posts = await postmodel.find(); // for background images
     const user = await usermodel
       .findOne({ username: req.session.passport.user })
       .populate('likedPosts');
 
-    res.render('postDetail', { post, posts, user, nav: true, currentPage: '' });
+res.render('postDetail', { post, posts, user, nav: true, currentPage: '' });
   } catch (err) {
     console.error('Post detail error:', err);
     res.status(500).send('Post not found');
@@ -80,6 +79,7 @@ router.get('/add', isLoggedIn, async (req, res) => {
   try {
     const user = await usermodel.findOne({ username: req.session.passport.user });
     res.render('add', { user, nav: true, currentPage: '' });
+
   } catch (err) {
     console.error('Add post page error:', err);
     res.status(500).send('Something went wrong.');
@@ -182,6 +182,8 @@ router.get('/show/liked', isLoggedIn, async (req, res) => {
       .populate('likedPosts');
 
     res.render('liked', { user, nav: true, currentPage: '' });
+
+
   } catch (err) {
     console.error('Show liked posts error:', err);
     res.status(500).send('Something went wrong.');

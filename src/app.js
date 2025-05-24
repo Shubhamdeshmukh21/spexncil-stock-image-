@@ -1,44 +1,85 @@
-const express = require('express');
-const app = express();
-const path = require('path');
-const session = require('express-session');
-const passport = require('passport');
-const LocalStrategy = require('passport-local');
+require('dotenv').config();
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const usermodel = require('./routes/users');
 
-dotenv.config(); // Load MONGO_URI from .env
-
-// Connect to MongoDB once here only
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.error("❌ MongoDB Error:", err));
+  .then(() => console.log("✅ MongoDB connected!"))
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
+
+
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+const expressSession = require("express-session");
+
+
+var indexRouter = require('../routes/index');
+var usersRouter = require('../routes/users');
+const passport = require('passport');
+
+var app = express();
+
+// View engine setup
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Session & Passport setup
-app.use(session({
-  secret: 'keyboard cat',
+// Serve static files from /public
+app.use(express.static(path.join(__dirname, '..', 'public')));
+console.log('__dirname:', __dirname);
+console.log('Serving static files from:', path.join(__dirname, '..', 'public'));
+
+
+// Session setup
+app.use(expressSession({
   resave: false,
   saveUninitialized: false,
+  secret: "hello",
 }));
 
+// Passport config
 app.use(passport.initialize());
 app.use(passport.session());
+passport.serializeUser(usersRouter.serializeUser());
+passport.deserializeUser(usersRouter.deserializeUser());
 
-passport.use(new LocalStrategy(usermodel.authenticate()));
-passport.serializeUser(usermodel.serializeUser());
-passport.deserializeUser(usermodel.deserializeUser());
+// Middleware
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
+
+
 
 // Routes
-const indexRoutes = require('./routes/index');
-app.use('/', indexRoutes);
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
 
-const PORT = process.env.PORT || 10000;
+// Attach user object to res.locals for EJS access
+app.use(function(req, res, next) {
+  res.locals.user = req.user;
+  next();
+});
+
+// Catch 404
+app.use(function(req, res, next) {
+  next(createError(404));
+});
+
+// Error handler
+app.use(function(err, req, res, next) {
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+
+
+module.exports = app;
