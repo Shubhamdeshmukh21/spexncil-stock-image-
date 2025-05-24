@@ -6,14 +6,14 @@ const Path = require("path");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/images/uploads');
+    cb(null, 'public/images/uploads'); // relative to your app root
   },
   filename: function (req, file, cb) {
-    const unique = uuidv4();
-    cb(null, unique + Path.extname(file.originalname));
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 
 const upload = multer({ storage: storage });
+
 
 module.exports = upload;
