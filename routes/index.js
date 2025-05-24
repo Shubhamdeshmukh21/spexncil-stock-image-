@@ -6,9 +6,9 @@ const postmodel = require('./post');     // your post model
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const upload = require('./multer');
-const mongoose = require('mongoose');
 
 
+mongoose.connect('mongodb+srv://username:password@cluster.mongodb.net/myDB')
 
 
 // Passport config
