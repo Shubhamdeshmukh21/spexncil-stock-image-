@@ -4,10 +4,9 @@
   "private": true,
   "scripts": {
     "build": "npm install && npm run build-client",
-    "build-client": "cd client && npm install && npm run build",
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "build-css": "tailwindcss -i ./public/stylesheets/style.css -o ./public/style.css --minify"
+    "build-client": "cd client && npm install && npm run build"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
