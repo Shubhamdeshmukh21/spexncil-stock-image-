@@ -7,8 +7,9 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const upload = require('./multer');
 const mongoose = require('mongoose');
-
-mongoose.connect('mongodb+srv://username:password@cluster.mongodb.net/myDB');
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.error("❌ MongoDB Error:", err));
 
 // Passport config
 passport.use(new LocalStrategy(usermodel.authenticate()));
