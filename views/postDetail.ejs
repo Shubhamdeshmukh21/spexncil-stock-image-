@@ -1,54 +1,64 @@
-<%- include('./partials/header.ejs') %>
+<%- include('./partials/header.ejs', { currentPage: '', nav: true }) %>
 
 <div class="relative w-full min-h-screen bg-zinc-800 overflow-hidden">
 
-  <!-- Back Button -->
   <div class="absolute top-20 left-4 z-20">
     <button onclick="history.back()" class="text-white bg-zinc-900 hover:bg-red-700 px-4 py-1 rounded-lg shadow-md transition text-sm">
-      ←
+      ← Back
     </button>
   </div>
 
-  <!-- Background Feed Images -->
   <div class="absolute inset-0 opacity-30 blur-sm pointer-events-none z-0">
     <div class="flex flex-wrap gap-4 p-4">
-      <% if (posts && posts.length > 0) { %>
-      <% posts.forEach(function(feedPost){ %>
-      <img src="/images/uploads/<%= feedPost.image %>" class="w-20 h-20 object-cover rounded-md" />
-      <% }) %>
+      <% if (post && post.image && post.image.data) { %>
+        <img
+          src="data:<%= post.image.contentType %>;base64,<%= post.image.data.toString('base64') %>"
+          alt="Post background"
+          class="rounded-lg w-24 h-24 object-cover"
+        />
+      <% } else { %>
+        <p class="text-zinc-400 text-sm">No background image available</p>
       <% } %>
     </div>
   </div>
 
-  <!-- Detail Card -->
   <div class="relative z-10 w-full min-h-screen flex items-center justify-center px-4 pt-24 pb-10">
     <div class="relative bg-zinc-900 bg-opacity-90 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row gap-6 w-full max-w-4xl shadow-xl">
 
-      <!-- Download Button -->
-      <a href="/images/uploads/<%= post.image %>" download class="absolute top-4 right-4 text-white bg-zinc-700 hover:bg-zinc-600 p-2 rounded-full">
+      <a href="/image/<%= post._id %>/download" class="absolute top-4 right-4 text-white bg-zinc-700 hover:bg-zinc-600 p-2 rounded-full" title="Download image">
         <i class="ri-download-2-line text-lg"></i>
       </a>
 
-      <!-- Image -->
       <div class="w-full md:w-1/2 flex justify-center items-center">
-        <img src="data:<%= post.image.contentType %>;base64,<%= post.image.data.toString('base64') %>" alt="Post image" class="rounded-lg w-full h-auto" />
+        <% if (post.image && post.image.data) { %>
+          <img
+            src="data:<%= post.image.contentType %>;base64,<%= post.image.data.toString('base64') %>"
+            alt="Post image"
+            class="rounded-lg w-full h-auto object-cover"
+          />
+        <% } else { %>
+          <div class="text-zinc-400">No image available</div>
+        <% } %>
       </div>
 
-      <!-- Text -->
       <div class="flex-1 text-white flex flex-col justify-center">
         <h1 class="text-xl md:text-4xl font-semibold mb-2"><%= post.title %></h1>
         <p class="text-sm md:text-xl text-zinc-300 mb-4"><%= post.description %></p>
         <h3 class="text-sm text-zinc-400 mt-2">Uploaded by: <span class="font-semibold">@<%= post.user.username %></span></h3>
 
-        <!-- Like Button -->
         <form action="/like/<%= post._id %>" method="POST" class="mt-4">
-          <button type="submit" class="text-2xl md:text-3xl transition duration-200 <%= user.likedPosts.some(p => p.equals(post._id)) ? 'text-red-600' : 'text-zinc-400 hover:text-red-500' %>">
-            <i class="<%= user.likedPosts.some(p => p.equals(post._id)) ? 'ri-heart-fill' : 'ri-heart-line' %>"></i>
+          <button
+            type="submit"
+            class="text-2xl md:text-3xl transition duration-200
+            <%= user.likedPosts.some(p => p._id.toString() === post._id.toString()) ? 'text-red-600' : 'text-zinc-400 hover:text-red-500' %>">
+            <i class="<%= user.likedPosts.some(p => p._id.toString() === post._id.toString()) ? 'ri-heart-fill' : 'ri-heart-line' %>"></i>
           </button>
         </form>
       </div>
+
     </div>
   </div>
+
 </div>
 
 <%- include('./partials/footer.ejs') %>

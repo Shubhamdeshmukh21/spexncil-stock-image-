@@ -1,16 +1,28 @@
 <%- include('./partials/header.ejs') %>
 
-<div class="w-full min-h-screen bg-zinc-800 text-white py-20">
-  <!-- Masonry Grid -->
-  <div class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 px-4 space-y-4">
-    <% user.posts.forEach(function(elem){ %>
-      <a href="/post/<%= elem._id %>" class="block break-inside-avoid rounded-xl overflow-hidden shadow-lg bg-zinc-900 transition-transform hover:scale-105 duration-200">
-        <img src="/images/uploads/<%= elem.image %>" class="w-full object-cover" alt="">
-        <div class="p-3">
-          <h5 class="text-sm font-semibold"><%= elem.title %></h5>
-        </div>
-      </a>
-    <% }) %>
+<div class="min-h-screen bg-zinc-900 text-white py-20 px-6 sm:px-12">
+  <h1 class="text-3xl font-bold mb-8">Your Uploaded Posts</h1>
+
+  <!-- Masonry style grid -->
+  <div class="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-6 space-y-6">
+    <% if (user.posts.length === 0) { %>
+      <p class="text-center text-gray-400">No posts uploaded yet.</p>
+    <% } else { %>
+      <% user.posts.forEach(function(post) { %>
+        <a href="/post/<%= post._id %>" class="block break-inside-avoid rounded-lg overflow-hidden shadow-lg bg-zinc-800 hover:shadow-2xl transition-shadow duration-300 transform hover:scale-105">
+          <img 
+            src="/image/<%= post._id %>" 
+            alt="<%= post.title %>" 
+            class="w-full h-48 object-cover"
+            loading="lazy"
+          />
+          <div class="p-4">
+            <h3 class="font-semibold text-lg truncate" title="<%= post.title %>"><%= post.title %></h3>
+            <p class="mt-1 text-sm text-gray-400 line-clamp-3"><%= post.description %></p>
+          </div>
+        </a>
+      <% }) %>
+    <% } %>
   </div>
 </div>
 

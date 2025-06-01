@@ -7,13 +7,20 @@
     <% if (user.likedPosts.length > 0) { %>
       <div class="columns-2 sm:columns-3 md:columns-4 gap-3 sm:gap-4 space-y-3 sm:space-y-4">
         <% user.likedPosts.forEach(function(post) { %>
-          <a href="/post/<%= post._id %>" class="break-inside-avoid overflow-hidden rounded-lg shadow block">
-            <img 
-              src="/images/uploads/<%= post.image %>" 
-              class="w-full object-cover rounded-md 
-                     max-h-[350px] sm:max-h-none" 
-              alt="Liked post"
-            />
+          <a href="/post/<%= post._id %>" class="break-inside-avoid overflow-hidden rounded-lg shadow block bg-zinc-800 hover:bg-zinc-700 transition duration-200 p-2">
+            <% if (post.image && post.image.data) { %>
+              <img 
+                src="data:<%= post.image.contentType %>;base64,<%= post.image.data.toString('base64') %>" 
+                class="w-full object-cover rounded-md max-h-[350px] sm:max-h-none mb-2" 
+                alt="Liked post"
+              />
+            <% } else { %>
+              <div class="w-full h-40 bg-zinc-700 flex items-center justify-center text-sm text-zinc-400 mb-2">
+                No image available
+              </div>
+            <% } %>
+            <h2 class="text-lg font-semibold mb-1"><%= post.title %></h2>
+            <p class="text-sm text-zinc-300 line-clamp-3"><%= post.description %></p>
           </a>
         <% }) %>
       </div>

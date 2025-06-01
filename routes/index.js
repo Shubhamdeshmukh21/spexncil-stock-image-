@@ -1,106 +1,128 @@
 const express = require('express');
 const router = express.Router();
-
-const usermodel = require('./users');    // your user model
-const postmodel = require('./post');     // your post model
-const passport = require('passport');
-const LocalStrategy = require('passport-local');
-const upload = require('./multer');
-
 const multer = require('multer');
+const passport = require('passport');
+
+const User = require('../src/models/user');
+const Post = require('../src/models/post');
+
+// Multer setup to handle in-memory image uploads
 const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
+// Auth check middleware
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  req.flash('error', 'You must be logged in.');
+  res.redirect('/login');
+}
 
-
-// Passport config
-passport.use(new LocalStrategy(usermodel.authenticate()));
-
+// HOME - Login page if not authenticated
 router.get('/', (req, res) => {
-  res.render('index', { nav: false });
+  if (req.isAuthenticated()) {
+    res.redirect('/feed');
+  } else {
+    res.render('index', { nav: false });
+  }
 });
 
+// ✅ LOGIN PAGE ROUTE (to fix "Cannot GET /login")
+router.get('/login', (req, res) => {
+  res.render('index', { nav: false }); // Assuming index.ejs is your login form
+});
+
+// LOGIN HANDLER
+router.post('/login', passport.authenticate('local', {
+  failureRedirect: '/login',
+  failureFlash: true,
+}), (req, res) => {
+  res.redirect('/feed');
+});
+
+// REGISTER
 router.get('/register', (req, res) => {
   res.render('register', { nav: false });
 });
 
-// ✅ PROFILE ROUTE
+router.post('/register', async (req, res, next) => {
+  try {
+    const newUser = new User({
+      username: req.body.username,
+      name: req.body.fullname,
+      contact: req.body.contact,
+    });
+    const registeredUser = await User.register(newUser, req.body.password);
+    req.login(registeredUser, err => {
+      if (err) return next(err);
+      req.flash('success', 'Welcome!');
+      res.redirect('/profile');
+    });
+  } catch (e) {
+    req.flash('error', e.message);
+    res.redirect('/register');
+  }
+});
+
+// LOGOUT
+router.get('/logout', (req, res, next) => {
+  req.logout(err => {
+    if (err) return next(err);
+    req.flash('success', 'Logged out successfully');
+    res.redirect('/');
+  });
+});
+
+// PROFILE VIEW
 router.get('/profile', isLoggedIn, async (req, res) => {
-  try {
-    const user = await usermodel
-      .findOne({ username: req.session.passport.user })
-      .populate('posts')
-      .populate('likedPosts');
-
-    res.render('profile', { user, nav: true, currentPage: 'profile' }); // Pass currentPage
-  } catch (err) {
-    console.error('Profile load error:', err);
-    res.status(500).send('Something went wrong.');
-  }
+  const user = await User.findById(req.user._id)
+    .populate('posts')
+    .populate('likedPosts');
+  res.render('profile', { user, nav: true, currentPage: 'profile' });
 });
 
-router.get('/show/posts', isLoggedIn, async (req, res) => {
+// PROFILE IMAGE UPLOAD
+router.post('/fileupload', isLoggedIn, upload.single('image'), async (req, res) => {
   try {
-    const user = await usermodel
-      .findOne({ username: req.session.passport.user })
-      .populate('posts');
-
-    res.render('show', { user, nav: true, currentPage: '' });
-
-  } catch (err) {
-    console.error('Show posts error:', err);
-    res.status(500).send('Something went wrong.');
-  }
-});
-
-// ✅ FEED ROUTE
-router.get('/feed', isLoggedIn, async (req, res) => {
-  try {
-    const user = await usermodel.findOne({ username: req.session.passport.user });
-    const posts = await postmodel.find().populate('user');
-
-    res.render('feed', { user, posts, nav: true, currentPage: 'feed' }); // Pass currentPage
-  } catch (err) {
-    console.error('Feed error:', err);
-    res.status(500).send('Something went wrong.');
-  }
-});
-
-router.get('/post/:id', isLoggedIn, async (req, res) => {
-  try {
-    const post = await postmodel.findById(req.params.id).populate('user');
-    const posts = await postmodel.find(); // for background images
-    const user = await usermodel
-      .findOne({ username: req.session.passport.user })
-      .populate('likedPosts');
-
-res.render('postDetail', { post, posts, user, nav: true, currentPage: '' });
-  } catch (err) {
-    console.error('Post detail error:', err);
-    res.status(500).send('Post not found');
-  }
-});
-
-router.get('/add', isLoggedIn, async (req, res) => {
-  try {
-    const user = await usermodel.findOne({ username: req.session.passport.user });
-    res.render('add', { user, nav: true, currentPage: '' });
-
-  } catch (err) {
-    console.error('Add post page error:', err);
-    res.status(500).send('Something went wrong.');
-  }
-});
-
-router.post('/createpost', isLoggedIn, upload.single('postimage'), async (req, res) => {
-  try {
-    const user = await usermodel.findOne({ username: req.session.passport.user });
-
     if (!req.file) {
-      return res.status(400).send('❌ No file uploaded.');
+      req.flash('error', 'No image uploaded');
+      return res.redirect('/profile');
     }
 
-    const post = await postmodel.create({
-      user: user._id,
+    const user = await User.findById(req.user._id);
+    user.profileImage.data = req.file.buffer;
+    user.profileImage.contentType = req.file.mimetype;
+    await user.save();
+
+    req.flash('success', 'Profile image updated!');
+    res.redirect('/profile');
+  } catch (e) {
+    console.error(e);
+    req.flash('error', 'Failed to upload image');
+    res.redirect('/profile');
+  }
+});
+
+// FEED - All posts
+router.get('/feed', isLoggedIn, async (req, res) => {
+  const posts = await Post.find().populate('user');
+  res.render('feed', { user: req.user, posts, nav: true, currentPage: 'feed' });
+});
+
+// ADD POST PAGE
+router.get('/add', isLoggedIn, (req, res) => {
+  res.render('add', { nav: true, currentPage: 'add' });
+});
+
+// CREATE NEW POST
+router.post('/createpost', isLoggedIn, upload.single('postimage'), async (req, res) => {
+  try {
+    if (!req.file) {
+      req.flash('error', 'No image uploaded');
+      return res.redirect('/add');
+    }
+
+    const newPost = new Post({
+      user: req.user._id,
       title: req.body.title,
       description: req.body.description,
       image: {
@@ -109,100 +131,113 @@ router.post('/createpost', isLoggedIn, upload.single('postimage'), async (req, r
       },
     });
 
-    user.posts.push(post._id);
-    await user.save();
+    await newPost.save();
 
+    req.user.posts.push(newPost._id);
+    await req.user.save();
+
+    req.flash('success', 'Post created!');
     res.redirect('/profile');
-  } catch (err) {
-    console.error('Post creation failed:', err);
-    res.status(500).send('Internal Server Error');
+  } catch (e) {
+    req.flash('error', 'Error creating post');
+    res.redirect('/add');
   }
 });
 
-
-router.post('/fileupload', isLoggedIn, upload.single('image'), async (req, res) => {
+// GET POST IMAGE
+router.get('/image/:postId', async (req, res) => {
   try {
-    const user = await usermodel.findOne({ username: req.session.passport.user });
-    user.profileImage = req.file.filename;
-    await user.save();
-    res.redirect('/profile');
-  } catch (err) {
-    console.error('Profile image upload error:', err);
-    res.status(500).send('Something went wrong.');
+    const post = await Post.findById(req.params.postId);
+    if (!post || !post.image.data) {
+      return res.status(404).send('Image not found');
+    }
+    res.contentType(post.image.contentType);
+    res.send(post.image.data);
+  } catch {
+    res.status(500).send('Error fetching image');
   }
 });
 
-router.post('/register', (req, res) => {
-  const data = new usermodel({
-    username: req.body.username,
-    contact: req.body.contact,
-    name: req.body.fullname,
-  });
+router.get('/post/:id', isLoggedIn, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id).populate('user');
+    if (!post) return res.status(404).send('Post not found');
 
-  usermodel.register(data, req.body.password)
-    .then(() => {
-      passport.authenticate('local')(req, res, () => {
-        res.redirect('/profile');
-      });
-    })
-    .catch(err => {
-      console.error('Registration Error:', err);
-      res.redirect('/register');
-    });
+    res.render('postDetail', { post, user: req.user, currentPage: 'postDetail' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
 });
 
-router.post('/login', passport.authenticate('local', {
-  failureRedirect: '/',
-  successRedirect: '/feed',
-}));
 
-router.get('/logout', (req, res, next) => {
-  req.logout(err => {
-    if (err) return next(err);
-    res.redirect('/');
-  });
-});
-
+// LIKE / UNLIKE TOGGLE
 router.post('/like/:postId', isLoggedIn, async (req, res) => {
   try {
-    const user = await usermodel.findOne({ username: req.session.passport.user });
     const postId = req.params.postId;
+    const user = await User.findById(req.user._id);
 
-    const isLiked = user.likedPosts.includes(postId);
+    const likedIndex = user.likedPosts.findIndex(id => id.equals(postId));
 
-    if (isLiked) {
-      user.likedPosts.pull(postId);
+    if (likedIndex !== -1) {
+      user.likedPosts.splice(likedIndex, 1);
     } else {
       user.likedPosts.push(postId);
     }
 
     await user.save();
     res.redirect('/post/' + postId);
-  } catch (err) {
-    console.error('Error toggling like:', err);
-    res.status(500).send('Internal Server Error');
+  } catch {
+    res.status(500).send('Error toggling like');
   }
 });
+
+
+router.get('/show/posts', isLoggedIn, async (req, res) => {
+  const user = await User.findById(req.user._id).populate('posts');
+  res.render('show', { user, nav: true, currentPage: 'profile' }); // or 'show' if you prefer
+});
+
+
 
 router.get('/show/liked', isLoggedIn, async (req, res) => {
   try {
-    const user = await usermodel
-      .findOne({ username: req.session.passport.user })
-      .populate('likedPosts');
-
-    res.render('liked', { user, nav: true, currentPage: '' });
-
-
+    const user = await User.findById(req.user._id).populate('likedPosts');
+    res.render('liked', {
+      user,
+      nav: true,               // required by your header.ejs
+      currentPage: 'liked'     // used in the navbar for active styling
+    });
   } catch (err) {
-    console.error('Show liked posts error:', err);
-    res.status(500).send('Something went wrong.');
+    console.error('Error fetching liked posts:', err);
+    res.redirect('/profile'); // or handle however you'd like
   }
 });
 
-// Middleware to check authentication
-function isLoggedIn(req, res, next) {
-  if (req.isAuthenticated()) return next();
-  res.redirect('/');
-}
+// Route to download image
+router.get('/image/:id/download', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post || !post.image || !post.image.data) {
+      return res.status(404).send('Image not found');
+    }
+
+    // Set content headers
+    res.set({
+      'Content-Type': post.image.contentType,
+      'Content-Disposition': `attachment; filename="image_${post._id}.jpg"`
+    });
+
+    res.send(post.image.data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+
+   
+
+
 
 module.exports = router;

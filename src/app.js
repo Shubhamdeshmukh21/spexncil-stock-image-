@@ -1,85 +1,61 @@
-require('dotenv').config();
+const express = require('express');
 const mongoose = require('mongoose');
-
-mongoose.connect('mongodb+srv://shubham:Shubham123@cluster0.g28oih5.mongodb.net/spexncilDB?retryWrites=true&w=majority')
-  .then(() => console.log('✅ MongoDB connected successfully'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
-
-
-
-var createError = require('http-errors');
-var express = require('express');
-const path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-const expressSession = require("express-session");
-
-
-var indexRouter = require('../routes/index');
-var usersRouter = require('../routes/users');
+const session = require('express-session');
 const passport = require('passport');
+const path = require('path');
+const flash = require('connect-flash');
 
-var app = express();
+const app = express();
 
-// View engine setup
+mongoose.connect('mongodb://localhost:27017/imageBufferDB')
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.log('MongoDB connection error:', err));
+
+
+const User = require('../src/models/user'); // ✅ correct path and filename
+// ✅ Likely correct if your post logic is a route, not a model:
+const Post = require('../routes/post'); // only if you're importing route logic (not schema)
+
 app.set('view engine', 'ejs');
-
-// Serve static files from /public
-app.use(express.static(path.join(__dirname, '..', 'public')));
-console.log('__dirname:', __dirname);
-console.log('Serving static files from:', path.join(__dirname, '..', 'public'));
+app.set('views', path.join(__dirname, '..', 'views'));
 
 
-// Session setup
-app.use(expressSession({
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(session({
+  secret: 'your-secret',
   resave: false,
   saveUninitialized: false,
-  secret: "hello",
 }));
 
-// Passport config
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
-passport.serializeUser(usersRouter.serializeUser());
-passport.deserializeUser(usersRouter.deserializeUser());
+
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 // Middleware
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-
-
-
-
-// Routes
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-// Attach user object to res.locals for EJS access
-app.use(function(req, res, next) {
-  res.locals.user = req.user;
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
+  res.locals.error = req.flash('error');
+  res.locals.success = req.flash('success');
   next();
 });
 
-// Catch 404
-app.use(function(req, res, next) {
-  next(createError(404));
+// In app.js or server.js
+app.use((req, res, next) => {
+  res.locals.nav = typeof res.locals.nav !== 'undefined' ? res.locals.nav : true;
+  res.locals.currentPage = res.locals.currentPage || '';
+  next();
 });
 
-// Error handler
-app.use(function(err, req, res, next) {
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-  res.status(err.status || 500);
-  res.render('error');
-});
+
+const indexRouter = require('../routes/index');
+app.use('/', indexRouter); // ✅ correct variable
+
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-
-
-module.exports = app;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

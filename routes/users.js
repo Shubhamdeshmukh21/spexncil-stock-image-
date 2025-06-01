@@ -1,36 +1,17 @@
-const mongoose = require('mongoose');  // keep this if you define schemas or models here
-// Remove mongoose.connect() from this file
+const mongoose = require('mongoose');
+const passportLocalMongoose = require('passport-local-mongoose');
 
-const plm = require("passport-local-mongoose");
-
-
-
-const userSchema = new mongoose.Schema({
-  username: String, // used by passport-local-mongoose
+const UserSchema = new mongoose.Schema({
   name: String,
-  email: String,
-  // password: String,  <--- REMOVE this, plm handles it internally
-  profileImage: String,
-  contact: Number,
-  boards: {
-    type: Array,
-    default: [],
+  contact: String,
+  profileImage: {
+    data: Buffer,
+    contentType: String,
   },
-  posts: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "post",
-    },
-  ],
-  likedPosts: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "post",
-    },
-  ],
+  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+  likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
 });
 
-// plugin passport-local-mongoose to handle username and hashed password
-userSchema.plugin(plm);
+UserSchema.plugin(passportLocalMongoose); // adds username, hash, salt, authenticate etc.
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model('User', UserSchema);

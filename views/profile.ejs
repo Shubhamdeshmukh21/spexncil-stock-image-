@@ -13,9 +13,15 @@
         <i class="ri-pencil-line text-zinc-800 text-sm"></i>
       </span>
       <div class="w-28 h-28 sm:w-32 sm:h-32 mt-2 bg-zinc-400 rounded-full overflow-hidden">
-        <img class="w-full h-full object-cover" src="/images/uploads/<%= user.profileImage %>" alt="Profile picture">
+        <% if (user.profileImage && user.profileImage.data) { %>
+          <img class="w-full h-full object-cover" 
+               src="data:<%= user.profileImage.contentType %>;base64,<%= user.profileImage.data.toString('base64') %>" 
+               alt="Profile picture" />
+        <% } else { %>
+          <div class="w-full h-full flex items-center justify-center text-zinc-200 text-sm">No Profile Image</div>
+        <% } %>
       </div>
-    </div>
+    </div>  
 
     <h1 class="text-2xl sm:text-3xl mt-3 font-semibold text-white"><%= user.name %></h1>
     <h2 class="text-md sm:text-lg font-medium text-zinc-300">@<%= user.username %></h2>
@@ -30,8 +36,15 @@
     <!-- Uploaded Posts Card -->
     <div class="card bg-zinc-900 rounded-xl p-4">
       <div class="w-full h-40 bg-zinc-200 rounded-lg overflow-hidden">
-        <% if (user.posts.length > 0) { %>
-        <img src="data:<%= post.image.contentType %>;base64,<%= post.image.data.toString('base64') %>" alt="Post image" class="rounded-lg w-full h-auto" />
+        <% if (user.posts.length > 0) {
+             let post = user.posts[0]; 
+        %>
+        <% if (post.image && post.image.data) { %>
+        <img src="data:<%= post.image.contentType %>;base64,<%= post.image.data.toString('base64') %>" 
+             class="w-full h-full object-cover" />
+        <% } else { %>
+        <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No image data</div>
+        <% } %>
         <% } else { %>
         <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No uploads</div>
         <% } %>
@@ -43,8 +56,16 @@
     <!-- Liked Posts Card -->
     <div class="card bg-zinc-900 rounded-xl p-4">
       <div class="w-full h-40 bg-zinc-200 rounded-lg overflow-hidden">
-        <% if (user.likedPosts.length > 0) { %>
-        <img class="w-full h-full object-cover" src="/images/uploads/<%= user.likedPosts[0].image %>" alt="Liked Post">
+        <% if (user.likedPosts.length > 0) {
+             let liked = user.likedPosts[0]; 
+        %>
+        <% if (liked.image && liked.image.data) { %>
+        <img src="data:<%= liked.image.contentType %>;base64,<%= liked.image.data.toString('base64') %>" 
+             alt="Liked post" 
+             class="w-full h-full object-cover" />
+        <% } else { %>
+        <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No image data</div>
+        <% } %>
         <% } else { %>
         <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No liked posts</div>
         <% } %>
