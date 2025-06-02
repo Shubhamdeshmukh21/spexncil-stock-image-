@@ -3,10 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "npm install && npm run build-client",
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "build-client": "cd client && npm install && npm run build"
+    "build": "echo 'No build step needed'"
   },
   "dependencies": {
     "connect-flash": "^0.1.1",
