@@ -30,13 +30,21 @@ router.get('/login', (req, res) => {
   res.render('index', { nav: false, error: req.flash('error') }); // Pass flash error messages here
 });
 
-// LOGIN HANDLER
-router.post('/login', passport.authenticate('local', {
-  failureRedirect: '/login',
-  failureFlash: 'Incorrect username or password', // Custom message on fail
-}), (req, res) => {
-  res.redirect('/feed');
+// LOGIN HANDLER (updated)
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) return next(err);
+    if (!user) {
+      req.flash('error', 'Wrong username or password');
+      return res.redirect('/login');
+    }
+    req.logIn(user, err => {
+      if (err) return next(err);
+      return res.redirect('/feed');
+    });
+  })(req, res, next);
 });
+
 
 // REGISTER
 router.get('/register', (req, res) => {
