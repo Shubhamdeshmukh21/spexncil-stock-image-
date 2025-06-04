@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const passport = require('passport');
-
 const User = require('../src/models/user');
 const Post = require('../src/models/post');
 
@@ -22,26 +21,26 @@ router.get('/', (req, res) => {
   if (req.isAuthenticated()) {
     res.redirect('/feed');
   } else {
-    res.render('index', { nav: false });
+    res.render('index', { nav: false, error: req.flash('error') }); // Pass error flash here too
   }
 });
 
 // ✅ LOGIN PAGE ROUTE (to fix "Cannot GET /login")
 router.get('/login', (req, res) => {
-  res.render('index', { nav: false }); // Assuming index.ejs is your login form
+  res.render('index', { nav: false, error: req.flash('error') }); // Pass flash error messages here
 });
 
 // LOGIN HANDLER
 router.post('/login', passport.authenticate('local', {
   failureRedirect: '/login',
-  failureFlash: true,
+  failureFlash: 'Incorrect username or password', // Custom message on fail
 }), (req, res) => {
   res.redirect('/feed');
 });
 
 // REGISTER
 router.get('/register', (req, res) => {
-  res.render('register', { nav: false });
+  res.render('register', { nav: false, error: req.flash('error') });
 });
 
 router.post('/register', async (req, res, next) => {
@@ -74,10 +73,16 @@ router.get('/logout', (req, res, next) => {
 
 // PROFILE VIEW
 router.get('/profile', isLoggedIn, async (req, res) => {
-  const user = await User.findById(req.user._id)
-    .populate('posts')
-    .populate('likedPosts');
-  res.render('profile', { user, nav: true, currentPage: 'profile' });
+  try {
+    const user = await User.findById(req.user._id)
+      .populate('posts')
+      .populate('likedPosts');
+    res.render('profile', { user, nav: true, currentPage: 'profile' });
+  } catch (e) {
+    console.error(e);
+    req.flash('error', 'Failed to load profile');
+    res.redirect('/');
+  }
 });
 
 // PROFILE IMAGE UPLOAD
@@ -104,8 +109,14 @@ router.post('/fileupload', isLoggedIn, upload.single('image'), async (req, res) 
 
 // FEED - All posts
 router.get('/feed', isLoggedIn, async (req, res) => {
-  const posts = await Post.find().populate('user');
-  res.render('feed', { user: req.user, posts, nav: true, currentPage: 'feed' });
+  try {
+    const posts = await Post.find().populate('user');
+    res.render('feed', { user: req.user, posts, nav: true, currentPage: 'feed' });
+  } catch (e) {
+    console.error(e);
+    req.flash('error', 'Failed to load feed');
+    res.redirect('/');
+  }
 });
 
 // ADD POST PAGE
@@ -139,6 +150,7 @@ router.post('/createpost', isLoggedIn, upload.single('postimage'), async (req, r
     req.flash('success', 'Post created!');
     res.redirect('/profile');
   } catch (e) {
+    console.error(e);
     req.flash('error', 'Error creating post');
     res.redirect('/add');
   }
@@ -153,7 +165,8 @@ router.get('/image/:postId', async (req, res) => {
     }
     res.contentType(post.image.contentType);
     res.send(post.image.data);
-  } catch {
+  } catch (e) {
+    console.error(e);
     res.status(500).send('Error fetching image');
   }
 });
@@ -169,7 +182,6 @@ router.get('/post/:id', isLoggedIn, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
 
 // LIKE / UNLIKE TOGGLE
 router.post('/like/:postId', isLoggedIn, async (req, res) => {
@@ -187,18 +199,22 @@ router.post('/like/:postId', isLoggedIn, async (req, res) => {
 
     await user.save();
     res.redirect('/post/' + postId);
-  } catch {
+  } catch (e) {
+    console.error(e);
     res.status(500).send('Error toggling like');
   }
 });
 
-
 router.get('/show/posts', isLoggedIn, async (req, res) => {
-  const user = await User.findById(req.user._id).populate('posts');
-  res.render('show', { user, nav: true, currentPage: 'profile' }); // or 'show' if you prefer
+  try {
+    const user = await User.findById(req.user._id).populate('posts');
+    res.render('show', { user, nav: true, currentPage: 'profile' }); // or 'show' if you prefer
+  } catch (e) {
+    console.error(e);
+    req.flash('error', 'Failed to load posts');
+    res.redirect('/profile');
+  }
 });
-
-
 
 router.get('/show/liked', isLoggedIn, async (req, res) => {
   try {
@@ -210,6 +226,7 @@ router.get('/show/liked', isLoggedIn, async (req, res) => {
     });
   } catch (err) {
     console.error('Error fetching liked posts:', err);
+    req.flash('error', 'Failed to load liked posts');
     res.redirect('/profile'); // or handle however you'd like
   }
 });
@@ -234,10 +251,5 @@ router.get('/image/:id/download', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
-
-   
-
-
 
 module.exports = router;
