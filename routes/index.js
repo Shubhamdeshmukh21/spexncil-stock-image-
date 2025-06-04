@@ -21,21 +21,20 @@ router.get('/', (req, res) => {
   if (req.isAuthenticated()) {
     res.redirect('/feed');
   } else {
-    res.render('index', { nav: false, error: req.flash('error') }); // Pass error flash here too
+    res.render('index', { nav: false, error: req.flash('error') });
   }
 });
 
-// ✅ LOGIN PAGE
+// LOGIN PAGE
 router.get('/login', (req, res) => {
   res.render('index', {
     nav: false,
     error: req.flash('error'),
-    success: req.flash('success')  // Add this line
+    success: req.flash('success')
   });
 });
 
-
-// LOGIN HANDLER (updated)
+// LOGIN HANDLER (custom callback to preserve flash on failure)
 router.post('/login', (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) return next(err);
@@ -49,7 +48,6 @@ router.post('/login', (req, res, next) => {
     });
   })(req, res, next);
 });
-
 
 // REGISTER
 router.get('/register', (req, res) => {
@@ -221,7 +219,7 @@ router.post('/like/:postId', isLoggedIn, async (req, res) => {
 router.get('/show/posts', isLoggedIn, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate('posts');
-    res.render('show', { user, nav: true, currentPage: 'profile' }); // or 'show' if you prefer
+    res.render('show', { user, nav: true, currentPage: 'profile' });
   } catch (e) {
     console.error(e);
     req.flash('error', 'Failed to load posts');
@@ -234,13 +232,13 @@ router.get('/show/liked', isLoggedIn, async (req, res) => {
     const user = await User.findById(req.user._id).populate('likedPosts');
     res.render('liked', {
       user,
-      nav: true,               // required by your header.ejs
-      currentPage: 'liked'     // used in the navbar for active styling
+      nav: true,
+      currentPage: 'liked'
     });
   } catch (err) {
     console.error('Error fetching liked posts:', err);
     req.flash('error', 'Failed to load liked posts');
-    res.redirect('/profile'); // or handle however you'd like
+    res.redirect('/profile');
   }
 });
 
@@ -252,7 +250,6 @@ router.get('/image/:id/download', async (req, res) => {
       return res.status(404).send('Image not found');
     }
 
-    // Set content headers
     res.set({
       'Content-Type': post.image.contentType,
       'Content-Disposition': `attachment; filename="image_${post._id}.jpg"`
