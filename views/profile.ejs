@@ -23,7 +23,7 @@
       </div>
     </div>  
 
-    <h1 class="text-2xl sm:text-3xl mt-3 font-semibold text-white"><%= user.name %></h1>
+    <h1 class="text-2xl sm:text-3xl mt-3 font-semibold"><%= user.name %></h1>
     <h2 class="text-md sm:text-lg font-medium text-zinc-300">@<%= user.username %></h2>
 
     <a href="/edit" class="px-6 py-1 bg-zinc-700 rounded-full text-xs sm:text-sm font-semibold mt-3 hover:bg-zinc-600 transition">Edit</a>
@@ -39,14 +39,14 @@
         <% if (user.posts.length > 0) {
              let post = user.posts[0]; 
         %>
-        <% if (post.image && post.image.data) { %>
-        <img src="data:<%= post.image.contentType %>;base64,<%= post.image.data.toString('base64') %>" 
-             class="w-full h-full object-cover" />
+          <% if (post.image && post.image.data) { %>
+            <img src="data:<%= post.image.contentType %>;base64,<%= post.image.data.toString('base64') %>" 
+                 class="w-full h-full object-cover" />
+          <% } else { %>
+            <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No image data</div>
+          <% } %>
         <% } else { %>
-        <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No image data</div>
-        <% } %>
-        <% } else { %>
-        <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No uploads</div>
+          <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No uploads</div>
         <% } %>
       </div>
       <a href="/show/posts" class="inline-block text-lg font-semibold mt-3">Your Uploaded Pins</a>
@@ -59,15 +59,15 @@
         <% if (user.likedPosts.length > 0) {
              let liked = user.likedPosts[0]; 
         %>
-        <% if (liked.image && liked.image.data) { %>
-        <img src="data:<%= liked.image.contentType %>;base64,<%= liked.image.data.toString('base64') %>" 
-             alt="Liked post" 
-             class="w-full h-full object-cover" />
+          <% if (liked.image && liked.image.data) { %>
+            <img src="data:<%= liked.image.contentType %>;base64,<%= liked.image.data.toString('base64') %>" 
+                 alt="Liked post" 
+                 class="w-full h-full object-cover" />
+          <% } else { %>
+            <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No image data</div>
+          <% } %>
         <% } else { %>
-        <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No image data</div>
-        <% } %>
-        <% } else { %>
-        <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No liked posts</div>
+          <div class="w-full h-full flex items-center justify-center text-zinc-500 text-sm">No liked posts</div>
         <% } %>
       </div>
       <a href="/show/liked" class="inline-block text-lg font-semibold mt-3">Your Liked Pins</a>
@@ -75,17 +75,16 @@
     </div>
 
   </div>
-
-  <!-- Upload Script -->
-  <script>
-    document.querySelector("#uploadicon").addEventListener("click", function() {
-      document.querySelector("#uploadform input").click();
-    });
-
-    document.querySelector("#uploadform input").addEventListener("change", function() {
-      document.querySelector("#uploadform").submit();
-    });
-  </script>
 </div>
+
+<script>
+  document.querySelector("#uploadicon").addEventListener("click", function() {
+    document.querySelector("#uploadform input").click();
+  });
+
+  document.querySelector("#uploadform input").addEventListener("change", function() {
+    document.querySelector("#uploadform").submit();
+  });
+</script>
 
 <%- include('./partials/footer.ejs') %>

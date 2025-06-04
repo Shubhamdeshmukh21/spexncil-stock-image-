@@ -1,36 +1,31 @@
-<% if (nav == true) { %>
-  <header class="fixed top-0 left-0 w-full z-50 bg-zinc-800 shadow-md">
-    <div class="flex items-center justify-between px-4 sm:px-10 py-3">
-      <h3 class="text-lg font-semibold text-white">spexncil</h3>
+<!DOCTYPE html>
+<html lang="en">
 
-      <!-- Desktop Nav -->
-      <nav class="hidden sm:flex gap-6 text-sm sm:text-base text-white">
-        <a href="/profile" class="<%= currentPage === 'profile' ? 'opacity-100' : 'opacity-60 hover:opacity-90' %> transition">Profile</a>
-        <a href="/feed" class="<%= currentPage === 'feed' ? 'opacity-100' : 'opacity-60 hover:opacity-90' %> transition">Feed</a>
-        <a href="/logout" class="px-3 py-1 bg-red-600 rounded-md hover:bg-red-700 transition">Logout</a>
-      </nav>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spexncil</title>
 
-      <!-- Mobile Hamburger -->
-      <div class="sm:hidden">
-        <button id="menuToggle" class="text-white text-2xl">
-          <i class="ri-menu-line"></i>
-        </button>
-      </div>
+  <!-- Remix Icon -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+
+  <!-- Tailwind CDN (official version) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Your custom styles (optional, load after Tailwind) -->
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+
+<body class="bg-zinc-900 text-white">
+
+  <% if (nav === true) { %>
+  <div class="fixed top-0 left-0 w-full z-50 px-4 sm:px-10 py-2 sm:py-3 flex bg-zinc-800 text-white justify-between shadow-md">
+    <h3 class="text-base sm:text-lg font-semibold">spexncil</h3>
+    <div class="flex gap-4 sm:gap-10 items-center text-sm sm:text-base">
+      <a href="/profile" class="<%= currentPage === 'profile' ? 'opacity-100' : 'opacity-50 hover:opacity-80' %> transition">Profile</a>
+      <a href="/feed" class="<%= currentPage === 'feed' ? 'opacity-100' : 'opacity-50 hover:opacity-80' %> transition">Feed</a>
+      <a class="px-2 py-1 bg-red-700 text-white rounded-md" href="/logout">Logout</a>
     </div>
-
-    <!-- Mobile Menu -->
-    <div id="mobileMenu" class="sm:hidden hidden flex-col px-4 pb-4 space-y-2 text-white text-sm">
-      <a href="/profile" class="<%= currentPage === 'profile' ? 'opacity-100' : 'opacity-60 hover:opacity-90' %> transition block">Profile</a>
-      <a href="/feed" class="<%= currentPage === 'feed' ? 'opacity-100' : 'opacity-60 hover:opacity-90' %> transition block">Feed</a>
-      <a href="/logout" class="px-3 py-1 bg-red-600 rounded-md hover:bg-red-700 transition w-fit">Logout</a>
-    </div>
-  </header>
-
-  <script>
-    const toggle = document.getElementById('menuToggle');
-    const menu = document.getElementById('mobileMenu');
-    toggle.addEventListener('click', () => {
-      menu.classList.toggle('hidden');
-    });
-  </script>
-<% } %>
+  </div>
+  <% } %>

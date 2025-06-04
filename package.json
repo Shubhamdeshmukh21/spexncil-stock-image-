@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "build": "npm install && npm run build-client",
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "build": "echo 'No build step needed'"
+    "build-client": "cd client && npm install && npm run build"
   },
   "dependencies": {
     "connect-flash": "^0.1.1",
@@ -40,5 +41,10 @@
   },
   "engines": {
     "node": "18.x"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.8"
   }
 }

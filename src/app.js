@@ -8,63 +8,74 @@ require('dotenv').config(); // Load environment variables
 
 const app = express(); // Initialize express app
 
-// Debug log to check MONGODB_URI
-console.log("Mongo URI:", process.env.MONGODB_URI);
-
-// Connect to MongoDB using environment variable
+// Get MongoDB URI from environment variables
 const mongoURI = process.env.MONGODB_URI;
 
+// Validate MongoDB URI format
+if (!mongoURI || (!mongoURI.startsWith('mongodb://') && !mongoURI.startsWith('mongodb+srv://'))) {
+  console.error("❌ Invalid or missing MongoDB URI. Please check your .env or Render environment variable.");
+  process.exit(1);
+}
+
+// Connect to MongoDB
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => console.log('MongoDB connected successfully'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => console.log('✅ MongoDB connected successfully'))
+.catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+  process.exit(1);
+});
 
-// Import Mongoose models and routes
-const User = require('../src/models/user'); // Make sure path is correct
-// DO NOT import post routes here unless needed directly
-// const Post = require('../routes/post'); // Optional - usually used in route file
+// Import User model
+const User = require('../src/models/user'); // Adjust path if needed
 
-// View engine setup
+// Set EJS as view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
-// Static files
-app.use(express.static(path.join(__dirname, '..', 'public'))); // Ensure '..' because you're inside /src
+// Serve static files
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Middleware
+// Body parser middleware
 app.use(express.urlencoded({ extended: true }));
 
+// Express session middleware
 app.use(session({
-  secret: 'your-secret', // Change this to a secure value
+  secret: 'your-secret', // Replace with a secure value or environment variable
   resave: false,
   saveUninitialized: false,
 }));
 
+// Flash messages middleware
 app.use(flash());
+
+// Initialize Passport and session
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Passport config
+// Passport configuration
 passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-// Custom middleware for flash messages and user info
+// Global variables for views
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
   res.locals.error = req.flash('error');
   res.locals.success = req.flash('success');
-  res.locals.nav = typeof res.locals.nav !== 'undefined' ? res.locals.nav : true;
+  res.locals.nav = res.locals.nav !== undefined ? res.locals.nav : true;
   res.locals.currentPage = res.locals.currentPage || '';
   next();
 });
 
 // Routes
-const indexRouter = require('../routes/index'); // Main route file
+const indexRouter = require('../routes/index');
 app.use('/', indexRouter);
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
