@@ -25,10 +25,15 @@ router.get('/', (req, res) => {
   }
 });
 
-// ✅ LOGIN PAGE ROUTE (to fix "Cannot GET /login")
+// ✅ LOGIN PAGE
 router.get('/login', (req, res) => {
-  res.render('index', { nav: false, error: req.flash('error') }); // Pass flash error messages here
+  res.render('index', {
+    nav: false,
+    error: req.flash('error'),
+    success: req.flash('success')  // Add this line
+  });
 });
+
 
 // LOGIN HANDLER (updated)
 router.post('/login', (req, res, next) => {
